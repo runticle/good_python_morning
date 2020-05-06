@@ -8,7 +8,7 @@ It select a random phone number from an array of some peoples numbers, and selec
 
 Easy as py!
 
-# To use
+# To use
 
 Just clone the thing, set up a lambda function (using python 3.8) and add a `phone_nums` file with an array called `phone_numbers`.
 

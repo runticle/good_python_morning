@@ -1,31 +1,58 @@
-from twilio.rest import Client
+import base64
+import json
+import os
+import urllib
+import random
+from urllib import request, parse
 from phone_nums import phone_numbers
 from happy_messages import messages
-import random
 
-# Your Account Sid and Auth Token from twilio.com/console
-# DANGER! This is insecure. See http://twil.io/secure
-account_sid = # get ya own
-auth_token = # get ya own
+TWILIO_SMS_URL = "https://api.twilio.com/2010-04-01/Accounts/{}/Messages.json"
+TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
 
-client = Client(account_sid, auth_token)
 
-def sendMessage(message, to_number):
-    message = client.messages.create(
-        body=message,
-            from_= # my twilio num
-            to=to_number
-    )
+def lambda_handler(event, context):
+    if not TWILIO_ACCOUNT_SID:
+        print("Unable to access Twilio Account SID.")
+    elif not TWILIO_AUTH_TOKEN:
+        print("Unable to access Twilio Auth Token.")
+
+    to_number=getRandom(phone_numbers)
+    from_number='+447380336714'
+    body=getRandom(messages)
+    
+    print("Sending... ")
+    print(body)
+    print("to...")
+    print(to_number)
+    
+    # send to me if test
+    if(event['test']):
+        to_number = # MY NUMBER
+    
+    # insert Twilio Account SID into the REST API URL
+    populated_url = TWILIO_SMS_URL.format(TWILIO_ACCOUNT_SID)
+    post_params = {"To": to_number, "From": from_number, "Body": body}
+
+    # encode the parameters for Python's urllib
+    data = parse.urlencode(post_params).encode()
+    req = request.Request(populated_url)
+
+    # add authentication header to request based on Account SID + Auth Token
+    authentication = "{}:{}".format(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+    base64string = base64.b64encode(authentication.encode('utf-8'))
+    req.add_header("Authorization", "Basic %s" % base64string.decode('ascii'))
+
+    try:
+        # perform HTTP POST request
+        with request.urlopen(req, data) as f:
+            print("Twilio returned {}".format(str(f.read().decode('utf-8'))))
+    except Exception as e:
+        print (e)
+        return e
+
+    print("SMS sent successfully!")
 
 def getRandom(from_list):
     return random.choice(from_list)
-
-
-def runScript():
-    # recipient = getRandom(phone_numbers)
-    message = getRandom(messages)
-    recipient = # my num
-    sendMessage(message, recipient)
-
-
-runScript()

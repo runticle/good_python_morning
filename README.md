@@ -18,4 +18,5 @@ Jobs a goodun
 
 Bye!
 
-NB. It does require 3.8 and most macs have 2.7 installed so watch out
+NB. It does require 3.7 and most macs have 2.7 installed by default so watch out
+To upgrade follow steps here https://opensource.com/article/19/5/python-3-default-mac

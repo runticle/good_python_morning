@@ -6,6 +6,8 @@ I used the Twilio API and set it up on AWS Lambda to send a message every mornin
 
 It select a random phone number from an array of some peoples numbers, and selects a random message from an array of weird messages I found on the internet.
 
+If the weather is more than 15°C forecast for the day, the message sent is instead a weather message with the temp and description. lol.
+
 Easy as py!
 
 # To use

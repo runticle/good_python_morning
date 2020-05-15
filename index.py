@@ -14,6 +14,7 @@ TWILIO_SMS_URL = "https://api.twilio.com/2010-04-01/Accounts/{}/Messages.json"
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
 MY_NUMBER = os.environ.get('MY_NUMBER')
+WEATHER_API_TOKEN = os.environ.get('WEATHER_API_TOKEN')
 
 def lambda_handler(event, context):
     if not TWILIO_ACCOUNT_SID:
@@ -21,9 +22,20 @@ def lambda_handler(event, context):
     elif not TWILIO_AUTH_TOKEN:
         print("Unable to access Twilio Auth Token.")
 
+    #  get todays weather in london
+    weather = getWeather()
+
+    # todays temperature
+    maxTemp = weather["forecast"]['forecastday'][0]["day"]["maxtemp_c"]
+    condition = weather["forecast"]['forecastday'][0]["day"]["condition"]["text"]
+
+    if maxTemp > 15:
+        body = "Morning! It will be at least {}°C today, and {}. Have a great day!".format(maxTemp, condition)
+    else:
+        body=getRandom(messages)
+
     to_number=getRandom(phone_numbers)
     from_number='+447380336714'
-    body=getRandom(messages)
     
     print("Attempting to send... ")
     print(body)
@@ -50,7 +62,7 @@ def lambda_handler(event, context):
     try:
         # perform HTTP POST request
         with request.urlopen(req, data) as f:
-            print("Twilio returned {}".format(str(f.read().decode('utf-8'))))
+            print("Twilio success")
     except Exception as e:
         print('Error from Twilio ->') 
         print (e)
@@ -61,5 +73,26 @@ def lambda_handler(event, context):
 def getRandom(from_list):
     return random.choice(from_list)
 
+def getWeather():
+    base_url = "http://api.weatherapi.com/v1/forecast.json"
+    api_key = "?key=" + WEATHER_API_TOKEN
+    # location
+    q = "&q=London"
 
-lambda_handler({"test": True}, 1)
+    req = base_url + api_key + q
+
+    print(req)
+
+    try:
+        # perform HTTP GET request to weather api
+        with request.urlopen(req) as f:
+            currentWeather = json.loads(f.read().decode('utf-8'))
+            print("WeatherApi success")
+            return currentWeather
+    except Exception as e:
+        print('Error from WeatherApi ->') 
+        print (e)
+        return e
+
+# lambda_handler({"test": True}, 1)
+
